@@ -14,4 +14,6 @@ To create CSR:
 
 `openssl req -new -newkey rsa:2048 -nodes -keyout server.key -out server.csr`
 
+PS: Windows users can run this command from Git Bash, can be downloaded from here <https://git-scm.com/downloads>
+
 

@@ -1,1 +1,7 @@
 .terraform/
+terraform.tfstate
+terraform.tfstate.backup
+aws-iot/server.csr
+aws-iot/server.key
+aws-iot/package
+aws-iot/payload.zip

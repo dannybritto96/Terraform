@@ -1,10 +1,10 @@
-provider "azure_rm" {
+provider "azurerm" {
   subscription_id = ""
 }
 
 data "azurerm_subscription" "subscription" {}
 
-data "azurerm_client_config" "client_config" {}
+data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "res_group" {
   name     = "${var.resourceGroupName}"
@@ -17,10 +17,10 @@ resource "azurerm_public_ip" "public_ip" {
   resource_group_name = "${azurerm_resource_group.res_group.name}"
   allocation_method   = "Dynamic"
   sku                 = "Basic"
-  domain_name_label   = "${var.domainNameLabel}.${lower(replace(var.location," ",""))}.cloudapp.azure.com"
+  domain_name_label   = "${var.domainNameLabel}"
 }
 
-resource "azurem_virutal_network" "vnet_name" {
+resource "azurerm_virtual_network" "vnet_name" {
   name                = "${var.vnetName}"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.res_group.name}"
@@ -79,11 +79,11 @@ resource "azurerm_network_security_group" "sec_group" {
 
 data "azurerm_subnet" "jenkins_subnet" {
   name                 = "${var.subnetName}"
-  virtual_network_name = "${azurem_virutal_network.vnet_name.name}"
+  virtual_network_name = "${azurerm_virtual_network.vnet_name.name}"
   resource_group_name  = "${azurerm_resource_group.res_group.name}"
 }
 
-resource "azurem_network-interface" "nic" {
+resource "azurerm_network_interface" "nic" {
   name                = "${var.vmName}-nic"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.res_group.name}"
@@ -102,7 +102,7 @@ resource "azurerm_virtual_machine" "vm" {
   name                             = "${var.vmName}"
   location                         = "${var.location}"
   resource_group_name              = "${azurerm_resource_group.res_group.name}"
-  network_interface_ids            = "${azurem_network-interface.nic.id}"
+  network_interface_ids            = ["${azurerm_network_interface.nic.id}"]
   vm_size                          = "${var.vmSize}"
   delete_data_disks_on_termination = true
 
@@ -131,14 +131,14 @@ resource "azurerm_virtual_machine" "vm" {
   }
 }
 
-resource "azurem_role_assignment" "role1" {
+resource "azurerm_role_assignment" "role1" {
   scope              = "${azurerm_resource_group.res_group.id}"
-  principal_id       = "${data.azurerm_client_config.test.client_id}"
-  role_definition_id = "Contributor"
+  principal_id       = "${data.azurerm_client_config.current.service_principal_object_id}"
+  role_definition_id = "${data.azurerm_subscription.subscription.id}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
 }
 
 resource "azurerm_virtual_machine_extension" "managed_identity" {
-  name                       = "${azurerm_virtual_machine.vm.name}/ManagedIdentityExtensionForLinux"
+  name                       = "ManagedIdentityExtensionForLinux"
   location                   = "${var.location}"
   resource_group_name        = "${azurerm_resource_group.res_group.name}"
   virtual_machine_name       = "${azurerm_virtual_machine.vm.name}"
@@ -149,7 +149,7 @@ resource "azurerm_virtual_machine_extension" "managed_identity" {
 }
 
 resource "azurerm_virtual_machine_extension" "init" {
-  name                       = "${azurerm_virtual_machine.vm.name}/Init"
+  name                       = "Init"
   location                   = "${var.location}"
   resource_group_name        = "${azurerm_resource_group.res_group.name}"
   virtual_machine_name       = "${azurerm_virtual_machine.vm.name}"
@@ -158,17 +158,17 @@ resource "azurerm_virtual_machine_extension" "init" {
   type                       = "CustomScript"
   type_handler_version       = "2.0"
 
-  protected_settings = <<PROTECTED_SETTINGS
-    {
-        "commandToExecute": "[concat('./', "${var.extensionScript}", ' -ca \"', "${var.enableCloudAgents}", '\" -jf \"', reference("${var.publicIpName}").outputs.fqdn.value, '\" -jrt \"', "${var.jenkinsReleaseType}", '\" -jt \"', "${var.jdkType}", '\" -lo \"', "${var.location}", '\" -rg \"', "${azurerm_resource_group.res_group.name}", '\" -sp \"', "${var.spType}", '\" -spid \"', "${var.spId}", '\" -ss \"', "${var.spSecret}", '\" -subid \"', "${data.azurerm_subscription.subscription.id}", '\" -tid \"', "${data.azurerm_client_config.client_config.tenant_id}", '\" -al \"', "${var.artifactsLocation}", '\" -st \"', "${var.artifactsSasToken}", '\"' )]"
-    }
-  PROTECTED_SETTINGS
-
   settings = <<SETTINGS
     {
         "fileUris": [
-            "[concat("${var.artifactsLocation}", '/scripts/', "${var.extensionScript}", "${var.artifactsSasToken}")]"
+            "${var.artifactsLocation}/scripts/${var.extensionScript}${var.artifactsSasToken}"
         ]
     }
   SETTINGS
+
+  protected_settings = <<PROTECTED_SETTINGS
+    {
+        "commandToExecute": "[./${var.extensionScript} -ca ${var.enableCloudAgents} -jf ${azurerm_public_ip.public_ip.fqdn} -jrt ${var.jenkinsReleaseType} -jt ${var.jdkType} -lo ${var.location} -rg ${azurerm_resource_group.res_group.name} -sp ${var.spType} -subid ${data.azurerm_subscription.subscription.subscription_id} -tid {data.azurerm_client_config.current.tenant_id} -al ${var.artifactsLocation}]"
+    }
+  PROTECTED_SETTINGS
 }

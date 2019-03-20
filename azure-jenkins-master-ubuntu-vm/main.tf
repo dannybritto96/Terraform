@@ -1,5 +1,8 @@
 provider "azurerm" {
   subscription_id = ""
+  client_id       = ""
+  client_secret   = ""
+  tenant_id       = ""
 }
 
 data "azurerm_subscription" "subscription" {}
@@ -168,7 +171,7 @@ resource "azurerm_virtual_machine_extension" "init" {
 
   protected_settings = <<PROTECTED_SETTINGS
     {
-        "commandToExecute": "[./${var.extensionScript} -ca ${var.enableCloudAgents} -jf ${azurerm_public_ip.public_ip.fqdn} -jrt ${var.jenkinsReleaseType} -jt ${var.jdkType} -lo ${var.location} -rg ${azurerm_resource_group.res_group.name} -sp ${var.spType} -subid ${data.azurerm_subscription.subscription.subscription_id} -tid {data.azurerm_client_config.current.tenant_id} -al ${var.artifactsLocation}]"
+        "commandToExecute": "./${var.extensionScript} -ca ${var.enableCloudAgents} -jf ${azurerm_public_ip.public_ip.fqdn} -jrt ${var.jenkinsReleaseType} -jt ${var.jdkType} -lo ${lower(replace(var.location," ",""))} -rg ${azurerm_resource_group.res_group.name} -sp ${var.spType} -subid ${data.azurerm_subscription.subscription.subscription_id} -tid {data.azurerm_client_config.current.tenant_id} -al ${var.artifactsLocation}"
     }
   PROTECTED_SETTINGS
 }

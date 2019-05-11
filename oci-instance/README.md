@@ -1,0 +1,1 @@
+## Terraform deployment to create a Instance, Virtual Network, Public Subnet, Internet Gateway and a Route Table in Oracle Cloud.

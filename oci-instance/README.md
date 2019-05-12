@@ -5,5 +5,5 @@ Follow the link: <https://docs.cloud.oracle.com/iaas/Content/API/Concepts/apisig
 
 ### Add Private and Public Keys file locations to Path
 
-export TF_VAR_public_key_path=/Users/user/.oci/oci_api_key_public.pem
+export TF_VAR_public_key_path=/Users/user/.oci/oci_api_key_public.pem </br>
 export TF_VAR_private_key_path=/Users/user/.oci/oci_api_key.pem

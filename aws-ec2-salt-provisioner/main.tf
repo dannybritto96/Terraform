@@ -111,7 +111,7 @@ resource "aws_instance" "serv" {
       connection {
           type = "ssh"
           user = "ubuntu"
-          private_key = "${file("C:\\Users\\Danny\\Downloads\\samp.pem")}"
+          private_key = "${file("C:\\Keys\\samp.pem")}"
       }
   }
 

@@ -108,6 +108,15 @@ resource "aws_security_group" "public_sg" {
       protocol = 6
       cidr_blocks = ["0.0.0.0/0"]
   }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = [
+        "0.0.0.0/0"
+    ]
+  }
 }
 
 resource "aws_security_group" "private_sg" {
@@ -127,6 +136,15 @@ resource "aws_security_group" "private_sg" {
       to_port = "${var.db_port}"
       protocol = 6
       cidr_blocks = ["${var.publicCIDR}"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = [
+        "0.0.0.0/0"
+    ]
   }
 
 }

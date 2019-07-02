@@ -13,7 +13,7 @@
 source {
         type = "GITHUB"
         location = "https://github.com/dannybritto96/HelloWorld-WAR.git"
-    }
+}
 ```
 - Change the below values in the source block of *code_pipeline.tf*
 ```hcl

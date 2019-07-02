@@ -140,7 +140,7 @@ resource "aws_instance" "webserv" {
   iam_instance_profile = "${aws_iam_instance_profile.instance_profile.name}"
   associate_public_ip_address = true
   tags = {
-    Name = "skl"
+    Name = "${var.instance_tag}"
   }
   depends_on = [
       "aws_iam_instance_profile.instance_profile"

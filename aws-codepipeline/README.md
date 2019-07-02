@@ -20,4 +20,10 @@ source {
 owner            = "ThirdParty"
 provider         = "GitHub"
 ```
-- Set GITHUB_TOKEN environment variable.
+- Set GITHUB_TOKEN environment variable in CodeBuild phase like this.
+```hcl
+environment_variable {
+      name  = "SOME_KEY1"
+      value = "SOME_VALUE1"
+}
+```

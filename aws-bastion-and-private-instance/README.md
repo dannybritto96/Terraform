@@ -1,4 +1,4 @@
-# Create a Jump Server and a Private Instance in AWS
+# Create a Bastion Instance and a Private Instance in AWS
 
 ### To create two EC2 instances, one of which cannot be accessed from the public internet but can be accessed only via the other instance which is the jump server.
 
